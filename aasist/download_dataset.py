@@ -10,17 +10,14 @@ import zipfile
 import shutil
 
 if __name__ == "__main__":
-    # Download the zip file using curl
     cmd = "curl -o ./LA.zip -# https://datashare.ed.ac.uk/bitstream/handle/10283/3336/LA.zip?sequence=3&isAllowed=y"
     os.system(cmd)
     
-    # Unzip the file
     cmd = "unzip LA.zip"
     os.system(cmd)
 
-    # Move files to the LA folder (if needed)
+    # Move files to the LA folder
     if os.path.isdir("LA/LA"):
-        # Create LA directory if it doesn't exist
         if not os.path.exists("LA"):
             os.makedirs("LA")
         
@@ -33,8 +30,6 @@ if __name__ == "__main__":
             else:
                 shutil.move(s, d)
         
-        # Remove the empty LA/LA folder after moving its contents
         shutil.rmtree("LA/LA")
 
-    # Optionally, remove the zip file
     os.remove("LA.zip")
