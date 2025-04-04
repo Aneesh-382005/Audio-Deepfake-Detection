@@ -19,6 +19,7 @@ from typing import Dict, List, Union
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from setuptools import setup
 from torch.utils.tensorboard import SummaryWriter
 from torchcontrib.optim import SWA
 
