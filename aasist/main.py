@@ -48,6 +48,13 @@ def main(args: argparse.Namespace) -> None:
         config["eval_all_best"] = "True"
     if "freq_aug" not in config:
         config["freq_aug"] = "False"
+    # Set checkpoint saving configuration with default values
+    if "save_checkpoint_every_epoch" not in config:
+        config["save_checkpoint_every_epoch"] = "True"
+    if "keep_all_checkpoints" not in config:
+        config["keep_all_checkpoints"] = "False"  # Only keep latest N checkpoints by default
+    if "max_checkpoints_to_keep" not in config:
+        config["max_checkpoints_to_keep"] = 5  # Default to keeping last 5 checkpoints
 
     # make experiment reproducible
     set_seed(args.seed, config)
@@ -73,9 +80,11 @@ def main(args: argparse.Namespace) -> None:
         model_tag = model_tag + "_{}".format(args.comment)
     model_tag = output_dir / model_tag
     model_save_path = model_tag / "weights"
+    checkpoint_path = model_tag / "checkpoints"  # New directory for regular checkpoints
     eval_score_path = model_tag / config["eval_output"]
     writer = SummaryWriter(model_tag)
     os.makedirs(model_save_path, exist_ok=True)
+    os.makedirs(checkpoint_path, exist_ok=True)  # Create checkpoint directory
     copy(args.config, model_tag / "config.conf")
 
     # set device
@@ -127,6 +136,9 @@ def main(args: argparse.Namespace) -> None:
     metric_path = model_tag / "metrics"
     os.makedirs(metric_path, exist_ok=True)
 
+    # Initialize a list to keep track of saved checkpoint files for rotation if needed
+    saved_checkpoints = []
+
     # Training
     for epoch in range(config["num_epochs"]):
         print("Start training epoch{:03d}".format(epoch))
@@ -144,6 +156,26 @@ def main(args: argparse.Namespace) -> None:
         writer.add_scalar("loss", running_loss, epoch)
         writer.add_scalar("dev_eer", dev_eer, epoch)
         writer.add_scalar("dev_tdcf", dev_tdcf, epoch)
+
+        # Save checkpoint after each epoch
+        if str_to_bool(config["save_checkpoint_every_epoch"]):
+            checkpoint_file = checkpoint_path / "checkpoint_epoch_{:03d}.pth".format(epoch)
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'loss': running_loss,
+                'dev_eer': dev_eer,
+                'dev_tdcf': dev_tdcf
+            }, checkpoint_file)
+            saved_checkpoints.append(checkpoint_file)
+            
+            # Manage checkpoint rotation if we don't want to keep all checkpoints
+            if not str_to_bool(config["keep_all_checkpoints"]) and len(saved_checkpoints) > config["max_checkpoints_to_keep"]:
+                oldest_checkpoint = saved_checkpoints.pop(0)  # Get the oldest checkpoint
+                if os.path.exists(oldest_checkpoint):
+                    os.remove(oldest_checkpoint)  # Remove the oldest checkpoint
+                print(f"Removed old checkpoint: {oldest_checkpoint}")
 
         best_dev_tdcf = min(dev_tdcf, best_dev_tdcf)
         if best_dev_eer >= dev_eer:
