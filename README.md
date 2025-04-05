@@ -93,9 +93,9 @@ Dataset
 
 | Configurations   | Detail                       |
 |------------------|------------------------------|
-| GPU              | NVIDIA RTX 4070 (8 GB VRAM)  |
-| Python Version   | 3.9.21                       |
-| CUDA Version     | 12.1                         |
+| GPU              | **NVIDIA RTX 4070 (8 GB VRAM)**  |
+| Python Version   | **3.9.21**                       |
+| CUDA Version     | **12.1**                         |
 | Training Epochs  | 10                           |
 | Final Batch Size | 8                            |
 
@@ -136,7 +136,7 @@ This [README](https://github.com/Aneesh-382005/Audio-Deepfake-Detection/blob/mai
 
 I trained and evaluated both AASIST and AASIST-L for 10 epochs on the ASVspoof 2019 LA dataset, with batch size 8. Below are the summarized performance results and artifacts:
 
-Below are the configurations and results for:
+Below are the configurations and results:
 
 **AASIST** : [`AASISTcustom.conf`](https://github.com/Aneesh-382005/Audio-Deepfake-Detection/blob/main/aasist/config/AASISTcustom.conf)
 
@@ -146,7 +146,7 @@ Below are the configurations and results for:
 
 `python main.py --config ./config/AASIST-Lcustom.conf`
 
----
+
 
 | Model       | Epochs | Batch Size | EER (%) | t-DCF  | Best Weights | Metrics Log |
 |-------------|:------:|:----------:|:-------:|:------:|:-------------|:-------------|
@@ -167,6 +167,63 @@ Below are the configurations and results for:
 - Model training at custom configurations.
 - Implemented a checkpoint mechanism which saves the current model state after each epoch. Keeps track of the last 5 checkpoints. This is especially useful if a previous epoch shows promising performance.
 
+### **Observed Strengths and Weaknesses**
+
+**Strengths**:
+- **Lightweight Architecture**: At just 85K parameters (~332KB), AASIST-L is the most viable model for mobile deployment.
+- **Competitive Performance**: Achieve an EER of 0.99% and min t-DCF of 0.0309 on the ASVspoof 2019 LA dataset, outperforming many larger models.
+- **Generalization**: The graph based architecture, heterogeneous stacking enables it to handle both logical access (LA) and deepfake (DF) types effectively.
+- **Training Stability**: Despite long training times, the model trained stably with no divergence across epochs.
+- **Compact & Deployable**: Thanks to half-precision training and a fixed architecture, it’s inference-ready on constrained devices (mobile/edge).
+
+**Weaknesses:**
+- **Long Training Time**: Even with mixed precision, training took over 4 hours for 10 epochs on a ~7GB dataset.
+- **Noisy Real Data**: Real-world audio with background noise or compression artifacts could reduce detection accuracy due to overfitting to curated datasets.
+- **Limited Explainability**: It is still challenging to interpret the model, explaining which features cause the final activation.
+- **Dataset Dependence**: The performance relies on dataset diversity. The dataset should contain samples of various spoofing methods like TTS, VC(Voice Conversion), SS(Speech Synthesis), etc
+
+**Suggestions for Future Improvements:**
+- **Quantization and Pruning**: INT8 quantization to prepare it for mobile hardware like **Snapdragon DSP** or **Apple Neural Engine**. Getting rid of the unneccessary weights.
+- **On-Device Benchmarking**: Evaluate latency and resources on actual devices (e.g., Android, iOS) to identify bottlenecks and optimize accordingly. **ONNX Runtime/ TensorRT** deployment to optimize it for mobiles. 
+- **Data Augmentation**: Incorporate more real life augmentations — background noise, reverberation, compression to improve generalization and staying updated with the latest spoofing techniques.
+- **Real-World Data Fine-Tuning**: Permission-based data aquisition for retraining and improving current datasets
+- **Constant Research:** Experimentation with various techniques and ensemble methods to further improve the metrics.
+- **Exploring cross language**: Exploring foreign function interfaces in Java to push performance ctritical parts of the code to C++/Rust.
+- **Knowledge Distillation:** Distilling knowledge from a large ensemble (eg. AASIST + XLSR).
 
 
+**Future dataset improvements:**
+- Train on the Latest ASVspoof datasets like [ASVSpoof 5](https://zenodo.org/records/14498691)
+- **Diverse and Representative Datasets**
+- **Synthetic Data Generation**
+- **Adversarial Training** - Incorporating examples in the datasets to learn to recignize adversatial manipulations as spoof
 
+### Deploying in a Production Environment:
+Deploying this model for real-world use involves multiple steps due to the complexity. Here's how I would approach it:
+- **Model Optimization**
+  - Quantization for speed and size reduction
+  - Convert to ONNX format for cross-platform deployment
+  - AASIST-L is already designed with only ~85K parameters, making it more deployment-friendly.
+
+- **Format Conversion**
+  - Convert the trained model to **ONNX**, **TorchScript**, or **TFLite**, depending on the chosen deployment framework.
+  - Use **TensorFlow Lite** (TFLite) or **TorchScript + JNI** For Android.
+  - Use **Core ML** or **TFLite** with Metal backend.
+  - No ONNX cloud runtimes or web APIs are used – models stay local on the device.
+
+- **Use native libraries or bindings:**
+  - **C++ or Rust** for latency-critical pre-processing steps.
+  - Bind with JNI (Android) or FFI (iOS) as needed.
+  
+- **CI/CD Pipeline**
+  - **GitHub Actions** for CI
+  - **Gradle** for Android builds
+  - **Python scripts** for model conversion
+  - **Local testing** on device or emulator 
+
+- **Privacy and Security**
+  - All processing is **on-device**, no audio or metadata is sent over the internet.
+  - No external API calls, no logging to cloud, no inference tracking.
+- **Future Update Strategy**
+  - Use app store updates to deliver newer models.
+  - Implement version-check logic to **select appropriate model per device** (based on hardware capability).
