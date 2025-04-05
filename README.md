@@ -227,3 +227,12 @@ Deploying this model for real-world use involves multiple steps due to the compl
 - **Future Update Strategy**
   - Use app store updates to deliver newer models.
   - Implement version-check logic to **select appropriate model per device** (based on hardware capability).
+
+
+## Executive Summary
+
+This project explores and implements **AASIST-L**, a lightweight graph attention-based model for detecting audio deepfakes. After comparing multiple state-of-the-art methods (RawGAT-ST, SpecRNet, AASIST), I chose AASIST-L for its excellent balance between performance and deployability.  
+
+Trained on the **ASVspoof 2019 LA dataset**, for 10 epochs AASIST-L achieved an **EER of 3.37%** and **t-DCF of 0.10** under constrained settings, while it having just **85K parameters**, making it highly suitable for mobile or real-time deployment.
+
+Future improvements include INT8 quantization, ONNX/TensorRT deployment, real-world data fine-tuning, and model compression.
