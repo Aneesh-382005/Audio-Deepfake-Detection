@@ -1,0 +1,4 @@
+=====
+epoch008, best eer, 2.6001%best tdcf, 0.0657
+=====
+EER: 2.432, min t-DCF: 0.06331
