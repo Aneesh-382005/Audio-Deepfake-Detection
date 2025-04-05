@@ -2,7 +2,7 @@
 
 ## Overview 
 
-This repository contains the implementation for Momenta’s Audio Deepfake Detection assessment. Having Explored various SotA architectures, I have decided to go with the AASIST-L model - A graph attention-based architecture.
+This repository contains the implementation for Momenta’s Audio Deepfake Detection assessment. Having Explored various SoTA architectures, I have decided to go with the AASIST-L model - A graph attention-based architecture.
 
 ## Research & Selection
 
@@ -91,7 +91,7 @@ Dataset
 
 - **Dataset Used**: [ASVspoof 2019 Logical Access (LA)](https://datashare.ed.ac.uk/handle/10283/3336)
 
-| Feature           | Detail                       |
+| Configurations   | Detail                       |
 |------------------|------------------------------|
 | GPU              | NVIDIA RTX 4070 (8 GB VRAM)  |
 | Python Version   | 3.9.21                       |
@@ -99,10 +99,64 @@ Dataset
 | Training Epochs  | 10                           |
 | Final Batch Size | 8                            |
 
+
+
+
+---
+
+**Model Analysis**
+
+The AASIST model was choosen for implementation because of it's SoTA performance over multiple datasets. It is a significant upgrade over the RawNet2 and RawGAT-ST architectures. Additionally the lightweight variant, AASIST-L, offers a compact solution of just 85K parameters, making it suitable for environments with limited resources.
+
+**Reasons to implement**
+- **State of the Art Performance:** The model performs well on both LA and DF datasets and holds a decent ranking in the [ASVSpoof 2021 benchmarks](https://paperswithcode.com/sota/audio-deepfake-detection-on-asvspoof-2021)
+- **Efficiency**: AASIST is a single end to end system which simplifies development as compared to models that require feature engineering or complex pipelines.
+
+**Key Components**
+- **RawNet** based encoder for extracting high-level feature maps from raw input waveforms. This encoder treats the output of the initial sinc-convolution layer as a 2D image (like a spectrogram) and uses residual blocks to learn relevant audio representations.
+- **Graph Combination:** A heterogeneous graph is composed using the two different graphs that each model spectral and temporal domains.
+- **Heterogeneous Stacking Graph Attention Layer (HS-GAL):** This layer incorporates a modified Attention Mechanism and an additional stack node. It enables the modelling of the two graphs with different nodes and dimensionalities.
+- **Max Graph Operation (MGO) and Readout Scheme:** Involves two branches, each containing two HS-GALs and graph pooling layers, followed by a max() operation. This allows model to learn diverse groups of spoofing artefacts. Thestack Node-based readout scheme aggregates information in the graph representations, enhancing the model to capture complex patterns in data.
+
+ 
+**Setup Instructions**
+```
+git clone https://github.com/Aneesh-382005/Audio-Deepfake-Detection.git
+cd Audio-Deepfake-Detection
+conda create -n aasist python=3.9
+conda activate aasist
+pip install -r requirements.txt
+cd aasist
+python.exe download_dataset.py #downloads and unzips the dataset.
+```
+
+This [README](https://github.com/Aneesh-382005/Audio-Deepfake-Detection/blob/main/aasist/README.md) contains the commands for the training baselines to train RawNet2, RawGAT-ST AASIST, and AASIST-L
+
+**My Implementation**
+
+I trained and evaluated both AASIST and AASIST-L for 10 epochs on the ASVspoof 2019 LA dataset, with batch size 8. Below are the summarized performance results and artifacts:
+
+Below are the configurations and results for:
+
+**AASIST** : [`AASISTcustom.conf`](https://github.com/Aneesh-382005/Audio-Deepfake-Detection/blob/main/aasist/config/AASISTcustom.conf)
+
+`python main.py --config ./config/AASISTcustom.conf `
+
+**AASIST - L** : [`AASIST-Lcustom.conf`](https://github.com/Aneesh-382005/Audio-Deepfake-Detection/blob/main/aasist/config/AASIST-Lcustom.conf)
+
+`python main.py --config ./config/AASIST-Lcustom.conf`
+
+---
+
+| Model       | Epochs | Batch Size | EER (%) | t-DCF  | Best Weights | Metrics Log |
+|-------------|:------:|:----------:|:-------:|:------:|:-------------|:-------------|
+| **AASIST**   | 10     | 8          | **2.432** | **0.06331** | [`best.pth`](https://github.com/Aneesh-382005/Audio-Deepfake-Detection/blob/main/aasist/exp_result/LA_AASISTcustom_ep10_bs8/weights/best.pth) |  [`t-DCF_EER`](https://github.com/Aneesh-382005/Audio-Deepfake-Detection/blob/main/aasist/exp_result/LA_AASISTcustom_ep10_bs8/metrics/t-DCF_EER_008epo.txt) |
+| **AASIST-L** | 10     | 8          | **3.373**    | **0.10398**  | [`best.pth`](https://github.com/Aneesh-382005/Audio-Deepfake-Detection/blob/main/aasist/exp_result/LA_AASIST-Lcustom_ep10_bs8/t-DCF_EER.txt) |  [`t-DCF_EER`](https://github.com/Aneesh-382005/Audio-Deepfake-Detection/blob/main/aasist/exp_result/LA_AASIST-Lcustom_ep10_bs8/t-DCF_EER.txt) |
+
 ---
 
 **Implementation challenges**
-- Deprecation warnings, version conflicts, and missing imports — even with recommended package versions
+- Deprecations , version conflicts, and missing imports — even with recommended package versions
 - The original `download_dataset.py` script failed to maintain the required folder structure.
 - Long training times, memory constraints.
 - Progress could be lost if there were an issue at any given epoch.
@@ -111,7 +165,8 @@ Dataset
 - Manual Deprecation fixes, code replacements, importing necessary libraries and saving a fresh requirements.txt
 - Modified the script to extract and organize data to match the expected input pipeline format.
 - Model training at custom configurations.
-- Implemented a checkpoint mechanism which saves the current model state after each epoch.
+- Implemented a checkpoint mechanism which saves the current model state after each epoch. Keeps track of the last 5 checkpoints. This is especially useful if a previous epoch shows promising performance.
+
 
 
 
