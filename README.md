@@ -2,9 +2,7 @@
 
 ## Overview 
 
-This repository contains the implementation for Momenta’s Audio Deepfake Detection assessment. Having Expl
-
-
+This repository contains the implementation for Momenta’s Audio Deepfake Detection assessment. Having Explored various SotA architectures, I have decided to go with the AASIST-L model - A graph attention-based architecture.
 
 ## Research & Selection
 
@@ -87,4 +85,33 @@ Evaluation Metrics:
 
 
 ## Implementation
+This project builds on the official [AASIST repository by ClovaAI](https://github.com/clovaai/aasist).  
+Both **AASIST** and its lighter version **AASIST-L** were re-trained on the **ASVspoof 2019 LA** dataset with custom modifications to support training on limited resources and ensure reproducibility.
+Dataset
+
+- **Dataset Used**: [ASVspoof 2019 Logical Access (LA)](https://datashare.ed.ac.uk/handle/10283/3336)
+
+| Feature           | Detail                       |
+|------------------|------------------------------|
+| GPU              | NVIDIA RTX 4070 (8 GB VRAM)  |
+| Python Version   | 3.9.21                       |
+| CUDA Version     | 12.1                         |
+| Training Epochs  | 10                           |
+| Final Batch Size | 8                            |
+
+---
+
+**Implementation challenges**
+- Deprecation warnings, version conflicts, and missing imports — even with recommended package versions
+- The original `download_dataset.py` script failed to maintain the required folder structure.
+- Long training times, memory constraints.
+- Progress could be lost if there were an issue at any given epoch.
+
+**Fixes**
+- Manual Deprecation fixes, code replacements, importing necessary libraries and saving a fresh requirements.txt
+- Modified the script to extract and organize data to match the expected input pipeline format.
+- Model training at custom configurations.
+- Implemented a checkpoint mechanism which saves the current model state after each epoch.
+
+
 
