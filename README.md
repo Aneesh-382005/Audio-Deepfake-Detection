@@ -2,7 +2,7 @@
 
 ## Overview 
 
-This repository contains the implementation for Momenta’s Audio Deepfake Detection assessment. Having Explored various SoTA architectures, I have decided to go with the AASIST-L model - A graph attention-based architecture.
+This repository contains the implementation for Momenta’s Audio Deepfake Detection assessment. Having Explored various SoTA architectures, I have decided to go with the **AASIST-L** model - A graph attention-based architecture.
 
 ## Research & Selection
 
