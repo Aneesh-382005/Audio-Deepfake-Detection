@@ -5,3 +5,5 @@ padhai/
 
 #ignore all zip files
 *.zip
+*.wav
+*.mp3

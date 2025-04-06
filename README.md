@@ -83,6 +83,7 @@ Evaluation Metrics:
 1. Equal Error Rate (EER): When the false acceptance rate (FAR) and false rejection rate (FRR) are equal
 2. Tandem detection cost function (t-DCF): A performance metric that balances spoof detection with speaker verification errors. Lower is better.
 
+---
 
 ## Implementation
 This project builds on the official [AASIST repository by ClovaAI](https://github.com/clovaai/aasist).  
@@ -100,9 +101,6 @@ Dataset
 | Final Batch Size | 8                            |
 
 
-
-
----
 
 **Model Analysis**
 
@@ -130,7 +128,7 @@ cd aasist
 python.exe download_dataset.py #downloads and unzips the dataset.
 ```
 
-This [README](https://github.com/Aneesh-382005/Audio-Deepfake-Detection/blob/main/aasist/README.md) contains the commands for the training baselines to train RawNet2, RawGAT-ST AASIST, and AASIST-L
+This [README](https://github.com/Aneesh-382005/Audio-Deepfake-Detection/blob/main/aasist/README.md) contains the commands for the training baselines to train **RawNet2, RawGAT-ST AASIST, and AASIST-L**
 
 **My Implementation**
 
@@ -155,17 +153,60 @@ Below are the configurations and results:
 
 ---
 
+
+### Inference
+
+To run the inference, go back to the root directory
+
+```bash
+cd .. 
+D:\Audio-Deepfake-Detection>python inference.py ^
+  --model_path <path\to\the\model.pth> ^
+  --config <config path.conf> ^
+  --input_audio path\to\your\audio.wav ^
+  --device <device>
+```
+
+`--device cpu` for running the inference on the CPU
+
+`--device cuda` for GPU inference.
+
+
+**Model Path:**
+
+**AASIST-L**: `aasist\models\weights\AASIST-L.pth`
+
+**AASIST**: `aasist\models\weights\AASIST.pth`
+
+**Config Path:**
+
+**AASIST-L**: `aasist\config\AASIST-L.conf`
+
+**AASIST**: `aasist\config\AASIST.conf`
+
+**Paths to my trained models:**
+
+**AASIST-L**:  `aasist\exp_result\LA_AASIST-Lcustom_ep10_bs8\weights\best.pth`
+
+**AASIST**: `aasist\exp_result\LA_AASISTcustom_ep10_bs8\weights\best.pth`
+
+---
+
 **Implementation challenges**
 - Deprecations , version conflicts, and missing imports — even with recommended package versions
 - The original `download_dataset.py` script failed to maintain the required folder structure.
 - Long training times, memory constraints.
 - Progress could be lost if there were an issue at any given epoch.
+- No script for Inference
 
 **Fixes**
 - Manual Deprecation fixes, code replacements, importing necessary libraries and saving a fresh requirements.txt
 - Modified the script to extract and organize data to match the expected input pipeline format.
 - Model training at custom configurations.
 - Implemented a checkpoint mechanism which saves the current model state after each epoch. Keeps track of the last 5 checkpoints. This is especially useful if a previous epoch shows promising performance.
+- Added an `inference.py`
+
+---
 
 ### **Observed Strengths and Weaknesses**
 
