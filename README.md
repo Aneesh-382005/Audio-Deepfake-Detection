@@ -192,6 +192,10 @@ D:\Audio-Deepfake-Detection>python inference.py ^
 
 ---
 
+*Upon testing on .wav files in the range 200KB to 4MB, The inference time on my NVIDIA RTX 4070 was **0.3 seconds** on average. Upon optimization, this shows great promise for mobile deployment.*
+
+---
+
 **Implementation challenges**
 - Deprecations , version conflicts, and missing imports — even with recommended package versions
 - The original `download_dataset.py` script failed to maintain the required folder structure.
